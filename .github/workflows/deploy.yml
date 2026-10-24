@@ -87,6 +87,7 @@ jobs:
     steps:
       - name: Notify Telegram
         run: |
+          BUILD: ${{ needs.build.result }}
           CHECKS="${{ needs.checks.result }}"
           DEPLOY="${{ needs.deploy.result }}"
           VERIFY="${{ needs.verify.result }}"
