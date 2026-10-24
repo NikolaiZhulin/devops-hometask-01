@@ -33,7 +33,7 @@ jobs:
             source .env.development.front
             docker build \
               --build-arg "VITE_API_URL=$VITE_API_URL" \
-              -t "$IMAGE_SHA" \  
+              -t "$IMAGE_SHA" \
               -t "$IMAGE_LATEST" \
               ./front
           else
@@ -87,7 +87,7 @@ jobs:
     steps:
       - name: Notify Telegram
         run: |
-          BUILD: ${{ needs.build.result }}
+          BUILD="${{ needs.build.result }}"
           CHECKS="${{ needs.checks.result }}"
           DEPLOY="${{ needs.deploy.result }}"
           VERIFY="${{ needs.verify.result }}"
