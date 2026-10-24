@@ -6,7 +6,7 @@ on:
 
 jobs:
   checks:
-    uses: ./.github/workflows/pr-check.yaml
+    uses: ./.github/workflows/typecheck.yaml
 
   build:
     needs: checks
