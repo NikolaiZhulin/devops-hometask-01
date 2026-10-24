@@ -29,10 +29,19 @@ jobs:
           IMAGE_SHA: ${{ vars.DOCKER_USER }}/todo-${{ matrix.service }}:sha-${{ github.sha }}
           IMAGE_LATEST: ${{ vars.DOCKER_USER }}/todo-${{ matrix.service }}:latest
         run: |
-          docker build \
-            -t "$IMAGE_SHA" \
-            -t "$IMAGE_LATEST" \
-            ./${{ matrix.service }}
+          if [ "${{ matrix.service }}" = "front" ]; then
+            source .env.development.front
+            docker build \
+              --build-arg "VITE_API_URL=$VITE_API_URL" \
+              -t "$IMAGE_SHA" \  
+              -t "$IMAGE_LATEST" \
+              ./front
+          else
+            docker build \
+              -t "$IMAGE_SHA" \
+              -t "$IMAGE_LATEST" \
+              ./back 
+          fi
           docker push "$IMAGE_SHA"
           docker push "$IMAGE_LATEST"
 
