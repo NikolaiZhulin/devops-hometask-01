@@ -6,12 +6,13 @@
 #
 # В этом файле НИГДЕ не должно быть сборки из исходников: образы должны браться
 # готовыми с Docker Hub. Если потребуется собрать — это делает Makefile, не compose.
-
+name: todo-app
 services:
   db:
     image: postgres:16-alpine
     env_file:
       .env.development.db
+    restart: unless-stopped
     ports:
         - "15432:5432"
     volumes:
@@ -38,9 +39,12 @@ services:
     #     попыток до признания unhealthy, сколько ждать перед самой первой проверкой
 
   back:
-    image: ${DOCKERHUB_USERNAME}/todo-back:${IMAGE_TAG}
+    image: ${DOCKERHUB_USERNAME}/todo-back:${APP_VERSION}
     platform: linux/amd64
     env_file: .env.development.back
+    restart: unless-stopped
+    environment:
+      APP_VERSION: ${APP_VERSION}
     ports:
       - "13000:3000"
     depends_on:
@@ -65,8 +69,9 @@ services:
     #     не мог изменить файл на хосте
 
   front:
-    image: ${DOCKERHUB_USERNAME}/todo-front:${IMAGE_TAG}
+    image: ${DOCKERHUB_USERNAME}/todo-front:${APP_VERSION}
     platform: linux/amd64
+    restart: unless-stopped
     ports:
       - "18080:80"
     depends_on:
