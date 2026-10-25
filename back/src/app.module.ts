@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import {MiddlewareConsumer, Module, NestModule} from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { TodosModule } from './todos/todos.module';
@@ -6,6 +6,7 @@ import { Todo } from './todos/todo.entity';
 import { TestResetModule } from './test-reset/test-reset.module';
 import { HealthModule } from './health/health.module';
 import {MetricsModule} from "./metrics/metrics.module";
+import {MetricsMiddleware} from "./metrics/metrics.middleware";
 
 @Module({
   imports: [
@@ -29,4 +30,11 @@ import {MetricsModule} from "./metrics/metrics.module";
     HealthModule,
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(MetricsMiddleware)
+      .exclude('metrics')  // не измеряем сам /metrics эндпоинт
+      .forRoutes('*');
+  }
+}

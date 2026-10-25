@@ -115,9 +115,25 @@ services:
       - '--storage.tsdb.retention.time=15d'   # хранить данные 15 дней
     restart: unless-stopped
 
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "127.0.0.1:3000:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning/datasources.yml:/etc/grafana/provisioning/datasources/datasources.yaml
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
 volumes:
   pgdata:
   prometheus_data:
+  grafana_data:
 
   # TODO — секция named volumes:
   #   - объявить том, имя которого ты указал в сервисе db (без дополнительных опций,
