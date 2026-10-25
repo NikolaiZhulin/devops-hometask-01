@@ -5,6 +5,7 @@ import { TodosModule } from './todos/todos.module';
 import { Todo } from './todos/todo.entity';
 import { TestResetModule } from './test-reset/test-reset.module';
 import { HealthModule } from './health/health.module';
+import {MetricsModule} from "./metrics/metrics.module";
 
 @Module({
   imports: [
@@ -23,6 +24,7 @@ import { HealthModule } from './health/health.module';
       }),
     }),
     TodosModule,
+    MetricsModule,
     TestResetModule,
     HealthModule,
   ],
