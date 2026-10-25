@@ -86,8 +86,38 @@ services:
     #     у back в этом задании нет healthcheck, поэтому здесь нужна другая condition
     #     (которая ждёт только запуска контейнера, не его health-статуса)
 
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: node-exporter
+    ports:
+      - "127.0.0.1:9100:9100"
+    pid: host                          # доступ к PID-пространству хоста
+    volumes:
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+      - /:/rootfs:ro
+    command:
+      - '--path.procfs=/host/proc'
+      - '--path.sysfs=/host/sys'
+      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($$|/)'
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - "127.0.0.1:9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.retention.time=15d'   # хранить данные 15 дней
+    restart: unless-stopped
+
 volumes:
   pgdata:
+  prometheus_data:
 
   # TODO — секция named volumes:
   #   - объявить том, имя которого ты указал в сервисе db (без дополнительных опций,
