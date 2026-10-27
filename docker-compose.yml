@@ -130,11 +130,33 @@ services:
       - prometheus
     restart: unless-stopped
 
+  loki:
+    image: grafana/loki:latest
+    container_name: loki
+    ports:
+      - "127.0.0.1:3100:3100"
+    volumes:
+      - ./monitoring/loki-config.yaml:/etc/loki/local-config.yaml
+      - loki_data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    restart: unless-stopped
+
+  promtail:
+    image: grafana/promtail:latest
+    container_name: promtail
+    volumes:
+      - /var/lib/docker/containers:/var/lib/docker/containers:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./monitoring/promtail-config.yaml:/etc/promtail/config.yml
+    command: -config.file=/etc/promtail/config.yml
+    privileged: true
+    restart: unless-stopped
+
 volumes:
   pgdata:
   prometheus_data:
   grafana_data:
-
+  loki_data:
   # TODO — секция named volumes:
   #   - объявить том, имя которого ты указал в сервисе db (без дополнительных опций,
   #     пустого тела достаточно)
