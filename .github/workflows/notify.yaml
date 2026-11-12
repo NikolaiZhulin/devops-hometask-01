@@ -1,0 +1,70 @@
+
+name: Telegram Notification
+
+on:
+  workflow_call:
+    inputs:
+      checks_result:
+        required: true
+        type: string
+      build_result:
+        required: true
+        type: string
+      deploy_result:
+        required: true
+        type: string
+      verify_result:
+        required: true
+        type: string
+    secrets:
+      TELEGRAM_BOT_TOKEN:
+        required: true
+      TELEGRAM_CHAT_ID:
+        required: true
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Telegram
+        env:
+          CHECKS: ${{ inputs.checks_result }}
+          BUILD: ${{ inputs.build_result }}
+          DEPLOY: ${{ inputs.deploy_result }}
+          VERIFY: ${{ inputs.verify_result }}
+          BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          REPOSITORY: ${{ github.repository }}
+          BRANCH: ${{ github.ref_name }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          ACTOR: ${{ github.actor }}
+          VERSION: sha-${{ github.sha }}
+        run: |
+          if [ "$CHECKS" != "success" ]; then
+            TEXT="❌ Type-check упал"
+          elif [ "$BUILD" != "success" ]; then
+            TEXT="❌ Build упал"
+          elif [ "$DEPLOY" != "success" ]; then
+            TEXT="❌ Deploy упал"
+          elif [ "$VERIFY" != "success" ]; then
+            TEXT="❌ Smoke не прошёл"
+          else
+            TEXT="✅ Деплой успешен"
+          fi
+
+          TEXT="$TEXT
+          $REPOSITORY @ $BRANCH
+          $RUN_URL
+          Actor: $ACTOR
+          Version: $VERSION"
+
+          RESPONSE=$(curl -fsS -X POST \
+            "https://api.telegram.org/bot${BOT_TOKEN}/sendMessage" \
+            --data-urlencode "chat_id=$CHAT_ID" \
+            --data-urlencode "text=$TEXT" \
+            -d "disable_web_page_preview=true")
+
+          echo "$RESPONSE" | grep -q '"ok":true' || {
+            echo "Telegram API rejected"
+            exit 1
+          }
