@@ -2,7 +2,7 @@ name: Deploy k8s
 
 on:
   push:
-    branches: [main]
+    branches: [week*]
 
 jobs:
   checks:
